@@ -1,0 +1,7 @@
+.ca{
+    width: 18rem; border: none;
+    transition: 10s;
+}
+.ca:hover{
+    transform: scale(1.2);
+}

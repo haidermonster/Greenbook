@@ -1,0 +1,18 @@
+.global{
+    width: 25rem;
+    padding: 30px;
+
+    border: none;
+     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+.form-label{
+    color: #14f755;
+}
+.sub{
+    background-color: #14f755;
+    width: 340px;
+    color: white;
+}
+.tex{
+    width: 340px;
+}
