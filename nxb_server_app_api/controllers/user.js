@@ -9,18 +9,18 @@ dotenv.config();
 let getUsers = async (req, res) => {
     try {
 
-        
-let id  = req.body.id;
-        const user = await Users.findOne({_id:id});
+
+        let id = req.body.id;
+        const user = await Users.findOne({ _id: id });
         if (user) {
             if (user.userType === "admin") {
 
                 const users = await Users.find({})
-                res.status(200).json({ data: users });                    
-            }else{
+                res.status(200).json({ data: users });
+            } else {
                 console.log(user);
-                
-            return res.status(403).json({  message: "u hae not access to this resource" });
+
+                return res.status(403).json({ message: "u hae not access to this resource" });
             }
         }
 
@@ -64,7 +64,7 @@ let userSignin = async (req, res) => {
         }
         const isMatch = await bcrypt.compare(password, users.password)
         if (isMatch) {
-            jwt.sign({ id: users._id }, process.env.JWT_SECRET,{expiresIn:'1day', audience:"web_app"}, (err, token) => {
+            jwt.sign({ id: users._id }, process.env.JWT_SECRET, { expiresIn: '1day', audience: "web_app" }, (err, token) => {
                 if (err) {
                     return res.status(500).json({ message: err.message });
                 }
@@ -135,18 +135,18 @@ let createUsers = async (req, res) => {
             const newuser = new Users({ email, name, password: hash })
             await newuser.save()
             if (newuser) {
-             
-          return  res.status(201).json({ message: "user created", user: { _id: newuser._id, name: newuser.name, email: newuser.email } });
-   
+
+                return res.status(201).json({ message: "user created", user: { _id: newuser._id, name: newuser.name, email: newuser.email } });
+
             } else {
-                
+
                 return res.status(500).json({ message: "user not created" })
             }
         })
 
 
     } catch (error) {
-      return  res.status(500).json({ message: error.message })
+        return res.status(500).json({ message: error.message })
     }
 }
 
@@ -176,19 +176,87 @@ let updateUsers = async (req, res) => {
     try {
 
 
-            const userUpdate = req.body
-            const id = req.body.id
+        const userUpdate = req.body
+        const id = req.body.id
 
-            const user = await Users.findByIdAndUpdate({ _id: id }, userUpdate)
+        const user = await Users.findByIdAndUpdate({ _id: id }, userUpdate)
 
 
-            res.status(200).json({ message: "user updated", data: user })
-        
+        res.status(200).json({ message: "user updated", data: user })
+
 
     } catch (error) {
         res.status(500).json({ message: error })
     }
 }
+
+let changePassword = async (req, res) => {
+    try {
+let id = req.body.id;
+        const { password, newPassword } = req.body.id
+
+let errors=[]
+        if (!password) {
+            errors.push("password feild is required")
+        }
+        if (!newPassword) {
+            errors.push("newPassword feild is required")
+        }
+
+
+        if (errors.length > 0) {
+
+            return res.status(400).json({ status: "bad request", errors: errors })
+        }
+
+        const users = await Users.findOne({ _id: id })
+        if (!users) {
+
+            return res.status(404).json({ message: "user doesnot exist against this email" });
+
+        }
+        const isMatch = await bcrypt.compare(password, users.password)
+
+        if (isMatch) {
+
+            bcrypt.hash(newPassword, 10, async (err, hash) => {
+                if (err) {
+                    res.status(500).json({ message: err.message })
+                }
+
+                users.password = hash;
+                const response = await new users.save();
+                if (response) {
+
+                    return res.status(201).json({ message: "password is changed", user: { _id: newuser._id, name: newuser.name, email: newuser.email } });
+
+                } else {
+
+                    return res.status(500).json({ message: "user not created" })
+                }
+            })
+
+
+        } else {
+            return res.status(200).json({ message: "current password is invalid" });
+        }
+
+
+        res.status(200).json({ message: "user updated", data: users })
+
+
+    } catch (error) {
+        res.status(500).json({ message: error })
+    }
+}
+
+
+
+
+
+
+
+
 
 // app.delete("/orders/:id", async (req, res) => {
 //     try {
@@ -215,5 +283,6 @@ module.exports = {
     createUsers,
     deleteUsers,
     updateUsers,
-    userSignin
+    userSignin,
+    changePassword
 };
